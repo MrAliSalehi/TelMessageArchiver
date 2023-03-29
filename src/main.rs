@@ -54,6 +54,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 async fn read_messages(client: &Client, target : String) -> Result<(), Box<dyn Error>> {
     let mut output = String::new();
     let chat = client.resolve_username(&target).await?.expect("failed to resolve [from]");
+    println!("reading from: {}",target);
     let mut messages = client.iter_messages(chat);
     let me = client.get_me().await?;
 
