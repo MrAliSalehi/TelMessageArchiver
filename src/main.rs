@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::fmt::format;
 use std::time::Instant;
 use grammers_client::{Config, InitParams, Client, InputMessage};
 use grammers_session::{Session};
@@ -46,14 +47,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         save_session(&client_handler)
     }
-    read_messages(&client_handler).await?;
+    read_messages(&client_handler,account.target).await?;
 
     Ok(())
 }
 
-async fn read_messages(client: &Client) -> Result<(), Box<dyn Error>> {
+async fn read_messages(client: &Client, target : String) -> Result<(), Box<dyn Error>> {
     let mut output = String::new();
-    let chat = client.resolve_username("khaneiranianis").await?.expect("failed to resolve [from]");
+    let chat = client.resolve_username(&target).await?.expect("failed to resolve [from]");
     let mut messages = client.iter_messages(chat);
     let me = client.get_me().await?;
 
@@ -67,7 +68,7 @@ async fn read_messages(client: &Client) -> Result<(), Box<dyn Error>> {
 
     write_output("archive.txt".to_string(), output).await.expect("could not write in the file");
     let upload = client.upload_file("archive.txt").await.expect("cant upload the file");
-    client.send_message(me, InputMessage::text("dump").file(upload)).await.expect("cant send the file");
+    client.send_message(me, InputMessage::text(format!("dump:{}",&target)).file(upload)).await.expect("cant send the file");
 
     Ok(())
 }
