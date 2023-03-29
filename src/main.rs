@@ -67,7 +67,7 @@ async fn read_messages(client: &Client) -> Result<(), Box<dyn Error>> {
 
     write_output("archive.txt".to_string(), output).await.expect("could not write in the file");
     let upload = client.upload_file("archive.txt").await.expect("cant upload the file");
-    client.send_message(me, InputMessage::text("Check this out!").file(upload)).await.expect("cant send the file");
+    client.send_message(me, InputMessage::text("dump").file(upload)).await.expect("cant send the file");
 
     Ok(())
 }
