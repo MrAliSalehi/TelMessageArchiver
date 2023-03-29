@@ -2,5 +2,5 @@
   "phone": "+x",
   "api_id": 0,
   "api_hash": "x",
-  "target": "channel_id"
+  "targets": ["channel_id","channel_id_2"]
 }

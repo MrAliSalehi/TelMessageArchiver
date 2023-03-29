@@ -46,12 +46,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         save_session(&client_handler)
     }
-    read_messages(&client_handler,account.target).await?;
+    while let Some(target)= account.targets.iter().next(){
+        read_messages(&client_handler,target).await?;
+    }
 
     Ok(())
 }
 
-async fn read_messages(client: &Client, target : String) -> Result<(), Box<dyn Error>> {
+async fn read_messages(client: &Client, target : &String) -> Result<(), Box<dyn Error>> {
     let mut output = String::new();
     let chat = client.resolve_username(&target).await?.expect("failed to resolve [from]");
     println!("reading from: {}",target);
@@ -86,6 +88,6 @@ fn get_tel_account() -> Option<TelegramAccount> {
     if !is_valid(&config) {
         panic!("Invalid config data");
     }
-    println!("Account:{},[{}-{}].", config.phone, config.api_hash, config.api_id);
+    println!("Account:{},[{}-{}], targets:[{:?}]", config.phone, config.api_hash, config.api_id,config.targets);
     Some(config)
 }
