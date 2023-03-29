@@ -39,13 +39,11 @@ pub fn config_exists() -> bool {
 }
 
 pub fn is_valid(config: &TelegramAccount) -> bool {
-    if config.api_hash.is_empty() || config.from.is_empty() || config.to.is_empty() {
+    if config.api_hash.is_empty() {
         return false;
     }
     if config.api_hash.len() < 3
         || config.api_id < 10
-        || config.from.is_empty()
-        || config.to.len() < 3
         || config.phone.len() < 5
     {
         return false;

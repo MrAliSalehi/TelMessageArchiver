@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::fmt::format;
 use std::time::Instant;
 use grammers_client::{Config, InitParams, Client, InputMessage};
 use grammers_session::{Session};
