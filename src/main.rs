@@ -1,11 +1,12 @@
 use std::error::Error;
 use std::time::Instant;
+use async_std::task::block_on;
 use grammers_client::{Config, InitParams, Client, InputMessage};
 use grammers_session::{Session};
 use crate::account::TelegramAccount;
 use crate::account_manager::*;
 use crate::utils::*;
-
+use rayon::prelude::*;
 
 mod utils;
 mod account_manager;
@@ -13,7 +14,6 @@ mod account;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-
     let account = get_tel_account().expect("cant get the telegram account");
 
     let login = Client::connect(Config {
@@ -46,17 +46,19 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
         save_session(&client_handler)
     }
-    while let Some(target)= account.targets.iter().next(){
-        read_messages(&client_handler,target).await?;
-    }
+    account.targets.par_iter().for_each(|target| {
+        block_on(async {
+            read_messages(&client_handler, &target).await.expect(format!("could not read from: {}", &target).as_str());
+        });
+    });
 
     Ok(())
 }
 
-async fn read_messages(client: &Client, target : &String) -> Result<(), Box<dyn Error>> {
+async fn read_messages(client: &Client, target: &String) -> Result<(), Box<dyn Error>> {
     let mut output = String::new();
     let chat = client.resolve_username(&target).await?.expect("failed to resolve [from]");
-    println!("reading from: {}",target);
+    println!("reading from: {}", target);
     let mut messages = client.iter_messages(chat);
     let me = client.get_me().await?;
 
@@ -70,7 +72,7 @@ async fn read_messages(client: &Client, target : &String) -> Result<(), Box<dyn 
 
     write_output("archive.txt".to_string(), output).await.expect("could not write in the file");
     let upload = client.upload_file("archive.txt").await.expect("cant upload the file");
-    client.send_message(me, InputMessage::text(format!("dump:{}",&target)).file(upload)).await.expect("cant send the file");
+    client.send_message(me, InputMessage::text(format!("dump:{}", &target)).file(upload)).await.expect("cant send the file");
 
     Ok(())
 }
@@ -88,6 +90,6 @@ fn get_tel_account() -> Option<TelegramAccount> {
     if !is_valid(&config) {
         panic!("Invalid config data");
     }
-    println!("Account:{},[{}-{}], targets:[{:?}]", config.phone, config.api_hash, config.api_id,config.targets);
+    println!("Account:{},[{}-{}], targets:[{:?}]", config.phone, config.api_hash, config.api_id, config.targets);
     Some(config)
 }
